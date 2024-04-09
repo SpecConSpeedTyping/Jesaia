@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Test</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    width: 80%;
+    max-width: 600px;
+    margin: auto;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #passage {
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    color: #333;
+  }
+  #userInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    resize: none;
+  }
+  #results {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #333;
+  }
+  #timer {
+    font-size: 1.2em;
+    color: #333;
+  }
+  .btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 20px;
+    font-size: 1em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="passage"></div>
+  <textarea id="userInput" rows="6" placeholder="Start typing here..." onkeydown="return (event.keyCode !== 8 && event.keyCode !== 46);"></textarea>
+  <div id="results"></div>
+  <div id="timer">Time remaining: 60 seconds</div>
+  <button id="startBtn" class="btn">Start</button>
+  <button id="tryAgainBtn" class="btn" style="display: none;">Try Again</button>
+  <form id="submissionForm" style="display: none;">
+    <input type="text" id="name" name="name" placeholder="Your Name" required><br>
+    <input type="email" id="email" name="email" placeholder="Your Email" required><br>
+    <textarea id="comments" name="comments" placeholder="Any comments"></textarea><br>
+    <input type="submit" value="Submit" class="btn">
+  </form>
+</div>
+
+<script>
+  // Array of passages
+  const passages = [
+    "And we have to just look back in history to understand how this works. I'm talking about the castle mentality. In mediaeval times, people built castles on top of a hill and they surrounded that with moats, crocodiles and trolls. And then around that, they had a town and around the town, they had a big wall and around that, they had the farmers working the land. And at the end of that, they had the watch towers. So if a foreign army would invade, the guys on the watch towers could see those people on the horses riding to the town. They could tell the people this big, big brown cloud is coming and they could start closing off the layers.",
+    "The wheeler at that stage had the sword in his right hand and the shield in his left hand. So for him to be effective, he had to be able to do this. Now, the spiralling staircase allowed him only to work with a backhand, which puts him at a disadvantage. So what they could do is they could defend that spiralling staircase at the top with only two or three men with long spears, because the attackers would then have to come up and fight their way up backhanded while the guys at the top could just use their spears to stop an army. And that would be the last line of defence until those guys could then breach the actual thing. And we need to learn from that. We need to use that same doctrine, that same mentality.",
+    "We have our outer layers outside the community. We've got our fences, we've got our dead area inside. . We've also got our dogs. Do you have dogs inside your house or outside your house? Now there's a book by Dr Rudolph Zn, called Home Invasion. You must please get that book. Read that book and understand what the violent house office has to say about this whole setup. And once you understand that, you will bring your dogs inside. People ask what type of dogs. Just don't get a dog like mine because he will only attack you if you mess with his food.",
+    "We are not fighting the Taliban. We don't know if people are sitting out there wanting to die, coming to us 200, 300, 400 wide. We've got a gang of criminals. They have only had a limited amount of time to spend doing their bad stuff, and we need to turn the tables on them. We need to take back the actual surprise here. So the moment they've surprised us, we need to catch them there, that's when we can be prepared.  The moment they start channelling, that's when we go back to the causal mentality. That's when we do that thing where we can fight them on our terms. So a layer of defence is only effective if it works like a beehive. If it works like a honeycomb. If you don't have the honeycomb effect what's going to happen? You will be all on your own there.",
+    "And now I'm on my own and that guy's on his own and that guy's on his own. And for me to clash, that is quite easy. So make sure that when you do look at the layer defence concept, you speak to the community, get the community involved, you get the neighbours involved. Have you got the telephone numbers of your neighbours?   Have you got them on speed dial? Do you talk to them?    Do you know what they look like?  Do they know what you look like? Have you got a working relationship with your neighbours? To such an extent that you can ask them for help, should you need that? Get your layer defence system sorted. Think onions, think layers, think honeycomb, think castle, and get your training done and get your systems in place."
+  ];
+
+  let currentPassageIndex;
+  let startTime;
+  let timerInterval;
+
+  // Function to generate a random passage
+  function generatePassage() {
+    currentPassageIndex = Math.floor(Math.random() * passages.length);
+    document.getElementById("passage").textContent = passages[currentPassageIndex];
+  }
+
+  // Function to calculate words per minute (WPM)
+  function calculateWPM(charactersTyped, elapsedTime) {
+    const words = charactersTyped / 5; // Average word length is considered to be 5 characters
+    const minutes = elapsedTime / 60000; // Milliseconds to minutes
+    return Math.round(words / minutes);
+  }
+
+  // Function to calculate accuracy
+  function calculateAccuracy(passage, userInput) {
+    const passageWords = passage.split(" ");
+    const userInputWords = userInput.split(" ");
+    let correctWords = 0;
+    for (let i = 0; i < userInputWords.length; i++) {
+      if (userInputWords[i] === passageWords[i]) {
+        correctWords++;
+      }
+    }
+    return Math.round((correctWords / passageWords.length) * 100);
+  }
+
+  // Function to calculate mistakes
+  function calculateMistakes(passage, userInput) {
+    const passageWords = passage.split(" ");
+    const userInputWords = userInput.split(" ");
+    let mistakes = 0;
+    for (let i = 0; i < Math.min(passageWords.length, userInputWords.length); i++) {
+      if (passageWords[i] !== userInputWords[i]) {
+        mistakes++;
+      }
+    }
+    // Account for any additional words typed by the user
+    mistakes += Math.max(userInputWords.length - passageWords.length, 0);
+    return mistakes;
+  }
+
+  // Function to update results
+  function updateResults() {
+    const userInput = document.getElementById("userInput").value;
+    const elapsedTime = Date.now() - startTime;
+    const charactersTyped = userInput.length;
+    const wpm = calculateWPM(charactersTyped, elapsedTime);
+    const accuracy = calculateAccuracy(passages[currentPassageIndex], userInput);
+    const mistakes = calculateMistakes(passages[currentPassageIndex], userInput);
+    document.getElementById("results").innerHTML = `WPM: ${wpm}<br>Accuracy: ${accuracy}%<br>Mistakes: ${mistakes}`;
+  }
+
+  // Function to update timer
+  function updateTimer() {
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(60 - Math.floor(elapsedTime / 1000), 0);
+    document.getElementById("timer").textContent = `Time remaining: ${remainingTime} seconds`;
+    if (remainingTime === 0) {
+      clearInterval(timerInterval);
+      document.getElementById("userInput").disabled = true;
+      updateResults();
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("tryAgainBtn").style.display = "inline-block";
+      document.getElementById("submissionForm").style.display = "block"; // Display the submission form
+    }
+  }
+
+  // Function to start the test
+  function startTest() {
+    generatePassage(); // Generate a passage when the test starts
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 1000); // Update timer every second
+    document.getElementById("userInput").focus();
+  }
+
+  // Event listener for start button
+  document.getElementById("startBtn").addEventListener("click", function() {
+    startTest();
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("tryAgainBtn").style.display = "none";
+    document.getElementById("userInput").disabled = false;
+    document.getElementById("userInput").value = "";
+    document.getElementById("results").innerHTML = "";
+    document.getElementById("submissionForm").style.display = "none"; // Hide the submission form
+  });
+
+  // Event listener for try again button
+  document.getElementById("tryAgainBtn").addEventListener("click", function() {
+    startTest();
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("tryAgainBtn").style.display = "none";
+    document.getElementById("userInput").disabled = false;
+    document.getElementById("userInput").value = "";
+    document.getElementById("results").innerHTML = "";
+    document.getElementById("submissionForm").style.display = "none"; // Hide the submission form
+  });
+
+  // Event listener for user input
+  document.getElementById("userInput").addEventListener("input", function() {
+    updateResults();
+  });
+
+  // Event listener for form submission
+  document.getElementById("submissionForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent default form submission behavior
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const comments = document.getElementById("comments").value;
+    const results = document.getElementById("results").innerHTML;
+
+    // Here you can send the user's information and test results to your server for processing
+    console.log("Name:", name);
+    console.log("Email:", email);
+    console.log("Comments:", comments);
+    console.log("Results:", results);
+  });
+
+</script>
+</body>
+</html>
